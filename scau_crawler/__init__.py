@@ -1,29 +1,19 @@
 import json
 import requests
 from requests import session
-from config import config
+from .config import config
 from .utils import get_tomorrow_week_number, get_tomorrow_weekday
 
 
 class Crawler:
-    session_ = None
-
-    is_login = False
-
-    token = ''
-    session_id = ''
-
-    account = ''
-    password = ''
-
-    info = None
-
-    def __init__(self, account=config['login_account'],
-                 password=config['login_password']):
-        if self.session_ is None:
-            self.session_ = session()
+    def __init__(self, account, password):
+        self.session_ = session()
         self.account = account
         self.password = password
+        self.token = None
+        self.session_id = None
+        self.is_login = False
+        self.info = None
 
     def login(self):
         payload = f'{{"userCode":"{self.account}","password":"{self.password}","userCodeType":"account"}}'
@@ -45,7 +35,7 @@ class Crawler:
         headers['TOKEN'] = self.token
         headers['Cookie'] = f'SESSION={self.session_id}; token='
         payload = f'{{"jczy013id":"2019-2020-1","pkgl002id":"W13414710000WH","zt":"2","pkzc":"{get_tomorrow_week_number()}"}}'
-        response= self.session_.request('POST', config['api_url'],
+        response = self.session_.request('POST', config['api_url'],
                                         data=payload,
                                         headers=headers)
         weekday = get_tomorrow_weekday()
@@ -59,8 +49,7 @@ class Crawler:
 
     def __repr__(self):
         return '\n'.join([x['pksjshow']+'\n' +
-                        x['kc_name']+'\n' +
-                        x['teachernames_1']+'\n' +
+                        x['kc_name'] + x['teachernames_1']+'\n' +
                         x['js_name'] + '\n' for x in self.info])
 
 

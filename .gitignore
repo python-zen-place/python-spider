@@ -1,5 +1,5 @@
 .idea/
 venv/
-config.py
 test.py
 .gitignore
+mi_crawler/config.py
