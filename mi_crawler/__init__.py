@@ -10,7 +10,7 @@ class Crawler:
     def __init__(self, username, password):
         self.option = ChromeOptions()
         self.option.add_experimental_option('excludeSwitches', ['enable-automation'])
-        # self.option.add_argument('--headless')
+        self.option.add_argument('--headless')
         self.username = username
         self.password = password
         self.driver = Chrome(options=self.option)
