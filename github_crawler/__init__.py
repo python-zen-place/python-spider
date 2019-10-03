@@ -1,27 +1,29 @@
-import requests
 from bs4 import BeautifulSoup
+import requests
+
+from .ContributedDay import ContributedDay
+
 
 class Crawler:
-    def __int__(self):
-        pass
+    def __init__(self, username):
+        self.contribute_days = []
+        self.username = username
 
     @property
     def contribute_url(self):
-        return 'https://github.com/users/saltoyster/contributions'
-
-    @property
-    def rgb_table(self):
-        return {
-            '#ebedf0': 'You didn\'t work that day',
-            '#c6e48b': 'you work a little',
-            '#7bc96f': 'you work nearly half a day',
-            '#239a3b': 'you work hard',
-            '#196127': 'you work very Hard'
-        }
+        return f'https://github.com/users/{self.username}/contributions'
 
     def get_contribute(self):
-        res = requests.get(self.contribute_url)
-        soup = BeautifulSoup(res)
-        colors = list(map(lambda x: x['fill'], soup.find_all('rect')))
-        for x in colors:
-            print(self.rgb_table[x])
+        res = requests.get(self.contribute_url).text
+        soup = BeautifulSoup(res, 'html.parser')
+        rects = soup.find_all('rect')
+        for rect in rects:
+            if rect['fill'] == '#ebedf0':
+                pass
+            else:
+                self.contribute_days.append(ContributedDay(rect['data-date'], rect['data-count']))
+
+    def __repr__(self):
+        if len(self.contribute_days) == 0:
+            return 'It seems that you have not worked this year'
+        return '\n'.join(map(str, self.contribute_days))
