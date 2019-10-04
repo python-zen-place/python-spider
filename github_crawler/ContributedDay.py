@@ -2,11 +2,11 @@ from datetime import datetime
 
 
 class ContributedDay:
-    def __init__(self, date, contribute):
+    def __init__(self, date, contributes):
         self.date = datetime.strptime(date, '%Y-%m-%d')
-        self.contribute = contribute
+        self.contributes = int(contributes)
 
     def __repr__(self):
-        if self.contribute == 1:
-            return f'You contribute {self.contribute} time on {self.date}'
-        return f'You contribute {self.contribute} times on {self.date}'
+        if self.contributes == 1:
+            return f'You contribute {self.contributes} time on {self.date.date()}'
+        return f'You contribute {self.contributes} times on {self.date.date()}'
