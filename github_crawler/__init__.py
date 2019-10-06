@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import requests
 
 from .ContributedDay import ContributedDay
-from .Language import Language
+from collections import Counter
 
 
 def require_login(fun):
@@ -25,10 +25,10 @@ class Crawler:
         self.username = username
         self.password = password
         self.is_login = False
-
+        self.session = requests.session()
         self.contributed_days = []
         self.repositories_links_list = []
-        self.language = []
+        self.language = Counter()
 
     @property
     def BASEURL(self):
@@ -37,6 +37,10 @@ class Crawler:
     @property
     def login_url(self):
         return 'https://github.com/login'
+
+    @property
+    def session_url(self):
+        return 'https://github.com/session'
 
     @property
     def contribution_url(self):
@@ -48,9 +52,24 @@ class Crawler:
 
     def login(self):
         assert self.password, 'Password required'
+        res = self.session.get(self.login_url).text
+        soup = BeautifulSoup(res, 'html.parser')
+        token = soup.find('input', {'name': 'authenticity_token'})['value']
+        res = self.session.post(self.session_url, data={
+            'commit': 'Sign in',
+            'utf8': '✓',
+            'authenticity_token': token,
+            'login': self.username,
+            'password': self.password,
+        }).text
+        soup = BeautifulSoup(res, 'html.parser')
+        if 'logged-in' in soup.body['class']:
+            self.is_login = True
+            return True
+        raise TimeoutError
 
     def get_contributions(self):
-        res = requests.get(self.contribution_url).text
+        res = self.session.get(self.contribution_url).text
         soup = BeautifulSoup(res, 'html.parser')
         rects = soup.find_all('rect')
         for rect in rects:
@@ -67,7 +86,7 @@ class Crawler:
                   '\n'.join(map(str, self.contributed_days)))
 
     def get_repositories(self):
-        res = requests.get(self.repositories_url).text
+        res = self.session.get(self.repositories_url).text
         soup = BeautifulSoup(res, 'html.parser')
         self.repositories_links_list = [self.BASEURL + tag['href']
                                         for tag in soup.find_all('a', itemprop='name codeRepository')]
@@ -81,18 +100,19 @@ class Crawler:
 
     def get_language(self):
         for link in self.repositories_links_list:
-            res = requests.get(link).text
+            res = self.session.get(link).text
             soup = BeautifulSoup(res, 'html.parser')
             for tag in soup.find_all('span', class_='language-color', itemprop='keywords'):
                 language = tag['aria-label'].split()[0]
                 use = float(tag['aria-label'].split()[1][:-1])/100
-                self.language.append(Language(language, use))
+                self.language.update({language: use})
 
     def show_language(self):
-        if Language.total_use == 0:
-            print('It seems that you have not worked this year')
+        language_sum = sum(self.language.values())
+        language_type = len(self.language.keys())
+        if language_type == 1:
+            print(f'You use {language_type} type of language')
         else:
-            print(f'You use {len(Language.language_dict.keys())} types of language \n' +\
-                  '\n'.join(map(str, self.language)))
-
-
+            print(f'You use {language_type} types of language')
+        for language, use in self.language.items():
+            print(f'{language}: {use/language_sum}')
