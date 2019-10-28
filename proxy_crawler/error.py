@@ -1,0 +1,2 @@
+class IPBannedException(BaseException):
+    pass
