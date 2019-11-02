@@ -4,8 +4,6 @@
 > 让想法成真
 
 ## 爬虫目录
-
-<<<<<<< HEAD
 - [Github](https://github.com/Weilet/crawler_practice/tree/master/github/README.md)
 - [HuYa](https://github.com/Weilet/crawler_practice/tree/master/huya/README.md)
 - [SCAU](https://github.com/Weilet/crawler_practice/tree/master/scau/README.md)
